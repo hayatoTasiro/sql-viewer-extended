@@ -1,49 +1,33 @@
-const container = document.getElementById('logs');
-const searchInput = document.getElementById('search');
-const selectButton = document.getElementById('select-log');
+const { ipcRenderer } = require('electron');
+const sqlFormatter = require('sql-formatter');
+const hljs = require('highlight.js/lib/core');
+const sql = require('highlight.js/lib/languages/sql');
+hljs.registerLanguage('sql', sql);
 
-let allLogs = [];
+// 要素取得
+const openBtn = document.getElementById('open-btn');
+const contentDiv = document.getElementById('content');
 
-function renderLogs(filteredLogs) {
-  container.innerHTML = '';
-  filteredLogs.forEach(sql => {
-    const pre = document.createElement('pre');
-    pre.textContent = sql;
-    pre.title = "クリックでコピー";
-    pre.addEventListener('click', () => {
-      navigator.clipboard.writeText(sql);
+// ログファイルを選択
+openBtn.addEventListener('click', async () => {
+  const result = await ipcRenderer.invoke('select-log-file');
+
+  if (result.canceled) return;
+
+  const lines = result.content.split('\n');
+
+  const formattedHTML = lines.map(line => {
+    const cleaned = line.replace(/^Executing\s+\(.*?\):\s*/, '');
+    if (!cleaned.trim()) return '';
+
+    const formatted = sqlFormatter.format(cleaned, {
+      language: 'postgresql',
+      indent: '  '
     });
 
-    if (/^\s*select/i.test(sql)) pre.classList.add('select');
-    if (/^\s*insert/i.test(sql)) pre.classList.add('insert');
-    if (/^\s*update/i.test(sql)) pre.classList.add('update');
-    if (/^\s*delete/i.test(sql)) pre.classList.add('delete');
-
-    container.prepend(pre);
+    const highlighted = hljs.highlight(formatted, { language: 'sql' }).value;
+    return `<pre><code class="hljs sql">${highlighted}</code></pre>`;
   });
-}
 
-window.api.onSQLLog((sql) => {
-  allLogs.push(sql);
-  const filtered = filterLogs(searchInput.value);
-  renderLogs(filtered);
-});
-
-function filterLogs(query) {
-  if (!query) return allLogs;
-  const q = query.toLowerCase();
-  return allLogs.filter(sql => sql.toLowerCase().includes(q));
-}
-
-searchInput.addEventListener('input', () => {
-  renderLogs(filterLogs(searchInput.value));
-});
-
-selectButton.addEventListener('click', async () => {
-  const name = await window.api.selectLogFile();
-  if (name) {
-    selectButton.textContent = `監視中: ${name}`;
-    allLogs = [];
-    container.innerHTML = '';
-  }
+  contentDiv.innerHTML = formattedHTML.join('\n');
 });
