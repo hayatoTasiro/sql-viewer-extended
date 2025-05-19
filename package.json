@@ -1,0 +1,15 @@
+{
+  "name": "sql-viewer",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^28.0.0"
+  },
+  "dependencies": {
+    "chokidar": "^3.5.3",
+    "sql-formatter": "^15.0.0"
+  }
+}

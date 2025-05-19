@@ -1,0 +1,29 @@
+body {
+  font-family: monospace;
+  background-color: #1e1e1e;
+  color: #ccc;
+  padding: 1em;
+}
+h2 {
+  color: #fff;
+}
+#search {
+  width: 100%;
+  padding: 0.5em;
+  font-size: 1em;
+  margin-bottom: 1em;
+}
+#logs {
+  max-height: 80vh;
+  overflow-y: auto;
+}
+pre {
+  white-space: pre-wrap;
+  word-break: break-word;
+  border-bottom: 1px solid #444;
+  padding: 0.5em 0;
+}
+.select { color: #6cf; }
+.insert { color: #6f6; }
+.update { color: #fc6; }
+.delete { color: #f66; }
